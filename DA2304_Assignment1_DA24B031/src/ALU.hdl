@@ -1,0 +1,56 @@
+CHIP ALU {
+    IN  
+        x[16], y[16],
+        zx, nx, zy, ny, f, no;
+
+    OUT 
+        out[16],
+        zr,
+        ng;
+
+    PARTS:
+    // --- 1. Standard ALU Logic ---
+    Mux16(a=x, b=false, sel=zx, out=out1);
+    Mux16(a=y, b=false, sel=zy, out=out2);
+
+    Not16(in=out1, out=notout1);
+    Mux16(a=out1, b=notout1, sel=nx, out=out3);
+
+    Not16(in=out2, out=notout2);
+    Mux16(a=out2, b=notout2, sel=ny, out=out4);
+
+    And16(a=out3, b=out4, out=out5);
+    Add16(a=out3, b=out4, out=out6);
+
+    Mux16(a=out5, b=out6, sel=f, out=out7);
+    Not16(in=out7, out=out8);
+    Mux16(a=out7, b=out8, sel=no, out=normalOut);
+
+    // --- 2. Multiplier Logic ---
+    Multiplier(a=x, b=y, low=mulLow, high=mulHigh);
+
+    // --- 3. Detect Multiply Command (01011x) ---
+    // We only check the first 5 bits (zx, nx, zy, ny, f)
+    Not(in=zx, out=nzx);
+    Not(in=zy, out=nzy);
+
+    And(a=nzx, b=nx, out=t1);
+    And(a=t1, b=nzy, out=t2);
+    And(a=t2, b=ny, out=t3);
+    And(a=t3, b=f, out=isMul); // isMul is 1 if instruction is 010110 OR 010111
+
+    // --- 4. Select Low or High ---
+    // If no=0, pick low. If no=1, pick high.
+    Mux16(a=mulLow, b=mulHigh, sel=no, out=mulResult);
+
+    // --- 5. Final Output Selection ---
+    Mux16(a=normalOut, b=mulResult, sel=isMul, out=out, out[0..7]=out9, out[8..15]=out10, out[15]=out12);
+
+    // --- 6. Flags ---
+    Or8Way(in=out9, out=o1);
+    Or8Way(in=out10, out=o2);
+    Or(a=o1, b=o2, out=o3);
+
+    Not(in=o3, out=zr);
+    And(a=out12, b=true, out=ng);
+}

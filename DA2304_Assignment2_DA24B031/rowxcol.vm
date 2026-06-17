@@ -1,0 +1,234 @@
+function MAIN_B 1
+
+push constant 1
+pop static 0
+
+push argument 0
+push argument 1
+push argument 3
+push argument 4
+push argument 5
+call MATMUL_B 5
+pop local 0
+
+push local 0
+push argument 2
+push argument 3
+push argument 5
+call ADD_BIAS 4
+return
+
+
+
+function MATMUL_B 4
+
+push argument 2
+push argument 4
+call MULT 2
+call ALLOCATE 1
+pop local 3
+
+push constant 0
+pop local 0
+
+label LOOP_I
+push local 0
+push argument 2
+lt
+not
+if-goto END_MB
+
+push constant 0
+pop local 1
+
+label LOOP_J
+push local 1
+push argument 4
+lt
+not
+if-goto NEXT_I_MB
+
+push argument 0
+push local 0
+push argument 3
+call GET_ROW_PTR 3
+
+push argument 1
+push local 1
+call GET_COL_PTR 2
+
+push argument 3
+push argument 4
+call ROWXCOL 4
+
+push local 3
+push local 0
+push local 1
+push argument 4
+call SET_ELEMENT 5
+
+push local 1
+push constant 1
+add
+pop local 1
+goto LOOP_J
+
+label NEXT_I_MB
+push local 0
+push constant 1
+add
+pop local 0
+goto LOOP_I
+
+label END_MB
+push local 3
+return
+
+
+
+function ROWXCOL 2
+
+push constant 0
+pop local 0
+
+push constant 0
+pop local 1
+
+label LOOP_K
+push local 0
+push argument 2
+lt
+not
+if-goto END_RC
+
+push local 1
+
+push argument 0
+push local 0
+call GET_ROW_ELEM 2
+
+push argument 1
+push local 0
+push argument 3
+call GET_COL_ELEM 3
+
+call MULT 2
+add
+pop local 1
+
+push local 0
+push constant 1
+add
+pop local 0
+goto LOOP_K
+
+label END_RC
+push local 1
+return
+
+
+
+function ADD_BIAS 3
+
+push argument 2
+push argument 3
+call MULT 2
+call ALLOCATE 1
+pop local 0
+
+push constant 0
+pop local 1
+
+label LOOP_I
+push local 1
+push argument 2
+lt
+not
+if-goto END_B
+
+push constant 0
+pop local 2
+
+label LOOP_J
+push local 2
+push argument 3
+lt
+not
+if-goto NEXT_B
+
+push argument 0
+push local 1
+push local 2
+push argument 3
+call GET_ELEMENT 4
+
+push argument 1
+push local 1
+push local 2
+push argument 3
+call GET_ELEMENT 4
+
+add
+
+push local 0
+push local 1
+push local 2
+push argument 3
+call SET_ELEMENT 5
+
+push local 2
+push constant 1
+add
+pop local 2
+goto LOOP_J
+
+label NEXT_B
+push local 1
+push constant 1
+add
+pop local 1
+goto LOOP_I
+
+label END_B
+push local 0
+return
+
+
+
+function GET_ROW_PTR 0
+push argument 1
+push argument 2
+call MULT 2
+push argument 0
+add
+return
+
+
+
+function GET_COL_PTR 0
+push argument 0
+push argument 1
+add
+return
+
+
+
+function GET_ROW_ELEM 0
+push argument 0
+push argument 1
+add
+pop pointer 1
+push that 0
+return
+
+
+
+function GET_COL_ELEM 0
+push argument 1
+push argument 2
+call MULT 2
+push argument 0
+add
+pop pointer 1
+push that 0
+return

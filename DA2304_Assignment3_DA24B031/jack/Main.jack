@@ -1,0 +1,56 @@
+class Main {
+    function void main() {
+        var Array matFive, matNine, kernelArr;
+        var Conv cNet;
+        var int idx;
+
+        let kernelArr = Array.new(9);
+        let kernelArr[0] = -1; let kernelArr[1] = 0; let kernelArr[2] = 1;
+        let kernelArr[3] = -2; let kernelArr[4] = 0; let kernelArr[5] = 2;
+        let kernelArr[6] = -1; let kernelArr[7] = 0; let kernelArr[8] = 1;
+
+        let matFive = Array.new(25);
+        
+        let matFive[0] = 0;  let matFive[1] = 0;  let matFive[2] = 10; let matFive[3] = 10; let matFive[4] = 10;
+        let matFive[5] = 0;  let matFive[6] = 0;  let matFive[7] = 10; let matFive[8] = 10; let matFive[9] = 10;
+        let matFive[10] = 0; let matFive[11] = 0; let matFive[12] = 10; let matFive[13] = 10; let matFive[14] = 10;
+        let matFive[15] = 0; let matFive[16] = 0; let matFive[17] = 10; let matFive[18] = 10; let matFive[19] = 10;
+        let matFive[20] = 0; let matFive[21] = 0; let matFive[22] = 10; let matFive[23] = 10; let matFive[24] = 10;
+
+        let cNet = Conv.new(5); 
+        do cNet.initFilter(kernelArr);
+        do cNet.getArrayInput(matFive, 5);
+        do cNet.conv2d();
+
+        do Output.printString("--- 5x5 Input, Stride 1 ---");
+        do Output.println();
+        do cNet.printOutput();
+        
+        do matFive.dispose();
+        do cNet.dispose();
+
+        let matNine = Array.new(81);
+        let idx = 0;
+        
+        while (idx < 81) { 
+            let matNine[idx] = idx; 
+            let idx = idx + 1; 
+        }
+
+        let cNet = Conv.new(9);
+        do cNet.initFilter(kernelArr);
+        do cNet.getArrayInput(matNine, 9);
+        do cNet.conv2d();
+
+        do Output.println();
+        do Output.printString("--- Extra Credit: 9x9 Input, Stride 1 ---");
+        do Output.println();
+        do cNet.printOutput();
+
+        do matNine.dispose();
+        do cNet.dispose();
+        do kernelArr.dispose();
+
+        return;
+    }
+}

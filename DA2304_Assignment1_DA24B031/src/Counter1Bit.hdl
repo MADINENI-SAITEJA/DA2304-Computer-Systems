@@ -1,0 +1,14 @@
+/**
+ * 1-bit counter:
+ * If reset=1 then out(t+1) = 0
+ * else if inc=1 then out(t+1) = not(out(t))
+ * else out(t+1) = out(t)
+ */
+
+CHIP Counter1Bit {
+    IN inc;
+    OUT out;
+    PARTS:
+    Not(in=outReg, out=notOut);
+    Bit(in=notOut, load=inc, out=out, out=outReg);
+}

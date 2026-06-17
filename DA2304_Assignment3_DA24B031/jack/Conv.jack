@@ -1,0 +1,132 @@
+class Conv {
+
+    static Array ArrayFilter;   
+    static int stride;          
+
+    field Array ArrayInput;     
+    field Array ArrayOutput;
+    field int ArraySize;        
+
+    constructor Conv new(int N) {
+        var int targetDim;
+        let ArraySize = N;
+        let stride = 1;
+        
+        if (ArrayFilter = 0) {
+            let ArrayFilter = Array.new(9);
+        }
+        
+        let ArrayInput = Array.new(N * N);
+        let targetDim = calcOutputDim();
+        let ArrayOutput = Array.new(targetDim * targetDim);
+        
+        return this;
+    }
+
+    method void initFilter(Array values) {
+        var int idx;
+        let idx = 0;
+        while (idx < 9) {
+            let ArrayFilter[idx] = values[idx];
+            let idx = idx + 1;
+        }
+        return;
+    }
+
+    method void getArrayInput(Array input, int size) {
+        var int idx;
+        let ArraySize = size;
+        let idx = 0;
+        while (idx < (size * size)) {
+            let ArrayInput[idx] = input[idx];
+            let idx = idx + 1;
+        }
+        return;
+    }
+
+    method int calcOutputDim() {
+        return ((ArraySize - 3) / stride) + 1;
+    }
+
+    method void conv2d() {
+        var int targetDim;
+        var int yOut, xOut;   
+        var int yIn,  xIn;   
+        var int ky,   kx;       
+        var int accum;
+        var int pxVal, wtVal;
+        var int flatIdx;                
+
+        if (ArraySize < 3) {
+            do Memory.poke(8000, -1);
+            return;
+        }
+
+        let targetDim = calcOutputDim();
+        let flatIdx = 0;       
+
+        let yOut = 0;
+        while (yOut < targetDim) {
+            let xOut = 0;
+            while (xOut < targetDim) {
+                let yIn = yOut * stride;
+                let xIn = xOut * stride;
+                let accum = 0;
+                let ky = 0;
+                
+                while (ky < 3) {
+                    let kx = 0;
+                    while (kx < 3) {
+                        let pxVal = ArrayInput[((yIn + ky) * ArraySize) + (xIn + kx)];
+                        let wtVal = ArrayFilter[(ky * 3) + kx];
+                        let accum = accum + (pxVal * wtVal);
+                        let kx = kx + 1;
+                    }
+                    let ky = ky + 1;
+                }
+
+                let ArrayOutput[flatIdx] = accum;
+                let flatIdx = flatIdx + 1;
+                let xOut = xOut + 1;
+            }
+            let yOut = yOut + 1;
+        }
+        return;
+    }
+
+    method void printOutput() {
+        var int targetDim;
+        var int r, c;
+        var int v;
+
+        let targetDim = calcOutputDim();
+
+        do Output.println();
+        do Output.printString("Output matrix:");
+        do Output.println();
+        
+        let r = 0;
+        while (r < targetDim) {
+            let c = 0;
+            while (c < targetDim) {
+                let v = ArrayOutput[(r * targetDim) + c];
+                do Output.printInt(v);
+                
+                if (c < (targetDim - 1)) {
+                    do Output.printChar(32);
+                }
+                let c = c + 1;
+            }
+            do Output.println();
+            let r = r + 1;
+        }
+        return;
+    }
+
+    method void dispose() {
+        do ArrayInput.dispose();
+        do ArrayOutput.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}
